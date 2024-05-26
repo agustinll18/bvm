@@ -8,7 +8,7 @@ const cors = require("cors");
 const Posts = require("./models/Products");
 const usersRouter = require("./controladores/users");
 const User = require("./models/User");
-
+/* CAMBIOS RAILWAY PARA EL BVM */
 /* 
 const bodyParser = require('body-parser');
 const mongoose = require("mongoose"); */ 
