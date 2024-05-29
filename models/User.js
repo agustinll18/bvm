@@ -11,6 +11,7 @@ const userSchema = new Schema({
     },
   ],
   pic: String,
+  cell: Number
 });
 
 userSchema.set("toJSON", {

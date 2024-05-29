@@ -12,7 +12,7 @@ const authenticateUser = (req, res, next) => {
 
   try {
     // Verifica y decodifica el token
-    const decoded = jwt.verify(token, 'tu_secreto'); // Reemplaza 'tu_secreto' con tu clave secreta
+    const decoded = jwt.verify(token, 'claveSecreta'); 
 
     // Coloca la información del usuario en req.user
     req.user = decoded.user;

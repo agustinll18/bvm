@@ -41,7 +41,7 @@ usersRouter.get("/:id", async (req, res, next) => {
 usersRouter.post("/", async (req, res, next) => {
   try {
     const { body } = req;
-    const { username, password, club } = body;
+    const { username, password, club ,cell} = body;
 
     // Verifica si el usuario ya existe (para evitar duplicados)
     const existingUser = await User.findOne({ username });
@@ -59,7 +59,7 @@ usersRouter.post("/", async (req, res, next) => {
     const user = new User({
       username,
       club,
-      passwordHash
+      passwordHash,cell
     });
 
     // Guarda el nuevo usuario en la base de datos
