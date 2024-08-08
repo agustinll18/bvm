@@ -7,6 +7,22 @@ const Post = require("../models/Products");
 const ObjectId = require('mongoose').Types.ObjectId;
 require("dotenv").config(); 
 
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.get('Authorization');
+  if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
+    return res.status(401).json({ error: 'Falta el Token o es invalido' });
+  }
+
+  const token = authHeader.substring(7);
+  jwt.verify(token, process.env.SECRET, (err, decodedToken) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token invalido' });
+    }
+    req.user = decodedToken;
+    next();
+  });
+};
+
 usersRouter.get("/", async (req, res, next) => {
   try {
     const users = await User.find({}).populate("posts");
@@ -47,7 +63,6 @@ usersRouter.post("/", async (req, res, next) => {
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      // Si el usuario ya existe, responde con un error
       return res.status(400).json({ error: "El usuario ya existe" });
     }
 
@@ -73,7 +88,6 @@ usersRouter.post("/", async (req, res, next) => {
 
     const token = jwt.sign(userForToken, process.env.SECRET);
 
-    // Responde con el token y el nombre de usuario
     res.status(200).send({ token, username: savedUser.username });
   } catch (error) {
     console.error("Error en la ruta de registro:", error);
@@ -87,18 +101,12 @@ usersRouter.post("/login", async (req, res, next) => {
     const { body } = req;
     const { username, password } = body;
 
-    // Busca al usuario en la base de datos
     const user = await User.findOne({ username });
 
-    // Verifica si el usuario existe y la contraseña es correcta
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      console.error("Credenciales incorrectas");
       return res.status(401).json({ error: "Credenciales incorrectas" });
     }
 
-    console.log("Inicio de sesión exitoso para el usuario:", user.username);
-
-    // Genera un token para el usuario
     const userForToken = {
       username: user.username,
       id: user._id,
@@ -106,27 +114,34 @@ usersRouter.post("/login", async (req, res, next) => {
 
     const token = jwt.sign(userForToken, process.env.SECRET);
 
-    // Responde con el token y el nombre de usuario
     res.status(200).send({ token, username: user.username });
   } catch (error) {
+    console.error("Error en la ruta de inicio de sesión:", error);
     next(error);
   }
 });
 
-
-usersRouter.delete("/:id", async (req, res, next) => {
+// Ruta para eliminar un post
+usersRouter.delete('/posts/:postId', authMiddleware, async (req, res, next) => {
   try {
-    const { id } = req.params;
- 
-    const user = await User.findById(id);
-    const postIds = user.posts;
+    const { postId } = req.params;
+    const userId = req.user.id;
 
-    await User.findByIdAndDelete(id);
-    await Post.deleteMany({ _id: { $in: postIds } });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const postIndex = user.posts.findIndex(post => post._id.toString() === postId);
+    if (postIndex === -1) {
+      return res.status(404).json({ error: "Post no encontrado" });
+    }
+
+    user.posts.splice(postIndex, 1);
+    await user.save();
 
     res.status(204).end();
   } catch (error) {
-    console.error("Error en la ruta de eliminación de usuario:", error);
     next(error);
   }
 });

@@ -2,7 +2,7 @@ const { model, Schema } = require("mongoose");
 
 const userSchema = new Schema({
   username: String,
-  club: String, // Cambiado de 'name' a 'club'
+  club: String, 
   passwordHash: String,
   posts: [
     {

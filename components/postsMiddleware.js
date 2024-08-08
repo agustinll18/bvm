@@ -1,9 +1,7 @@
-// middleware/authenticate.js
-
 const jwt = require('jsonwebtoken');
 
-const authenticateUser = (req, res, next) => {
-  // Obtén el token del encabezado de autorización
+const authenticateUser = (req, res, next) => {/* 
+   Obtén el token del encabezado de autorización */
   const token = req.header('Authorization');
 
   if (!token) {
@@ -11,10 +9,10 @@ const authenticateUser = (req, res, next) => {
   }
 
   try {
-    // Verifica y decodifica el token
+    /*  Verifica y decodifica el token */
     const decoded = jwt.verify(token, 'claveSecreta'); 
 
-    // Coloca la información del usuario en req.user
+   /*  Coloca la información del usuario en req.user */
     req.user = decoded.user;
     next();
   } catch (error) {
